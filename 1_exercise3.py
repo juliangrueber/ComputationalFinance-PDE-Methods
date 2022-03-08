@@ -37,8 +37,8 @@ def makeG(N : int) -> np.matrix :
         G[n, n+1] = 1
         G[n, n-1] = 1
 
-    G[0,1] = 1
-    G[N, N-1] = 1
+    G[0,1] = 2
+    G[N, N-1] = 2
 
     #print("return G")
     return G
@@ -97,14 +97,13 @@ def Eulerimplicit(N, M):
 
     # Define C and invert it to go the iterative scheme forward, since we have to start at the initial condition
     C = np.identity(N + 1) - v * G
-    C = np.invert(C)
 
     x_initial = np.linspace(start=0, stop=1, num=N + 1)
 
     u = initial_value(x_initial)
 
     for m in range(M):
-        u = C.dot(u)
+        u = np.linalg.solve(C, u)
 
     return u
 
@@ -112,9 +111,25 @@ def Eulerimplicit(N, M):
 
 
 #### error analysis ####
-l = 5
-N = np.array([10, 15, 20, 25, 30])  # todo for 3 c)
-M = np.array([100, 100, 100, 100, 100])  # todo  for 3 c) and 3 d)
+
+
+l_list = [2, 3, 4, 5, 6]
+l = len(l_list)
+
+task = "d" # "d"
+
+if task == "c":
+    N = np.power(2, l_list)
+    M = 2 * np.power(4, l_list)
+
+elif task == "d":
+    N = np.power(2, l_list)
+    M = np.power(4, l_list)
+
+else:
+    print("wrong task assigned")
+
+
 l2errorexplicit = np.zeros(5)  # error vector for explicit method
 l2errorimplicit = np.zeros(5)  # error vector for implicit method
 h2k = 1 / (N ** 2) + 1 / M
@@ -122,7 +137,6 @@ h2k = 1 / (N ** 2) + 1 / M
 #### Do not change any code below! ####
 try:
     for i in range(5):
-        print("N[i]: ", N[i])
         l2errorexplicit[i] = (1 / N[i]) ** (1 / 2) * lin.norm(
             exact_solution_at_1(np.linspace(0, 1, N[i] + 1).reshape(N[i] + 1, 1)) - Eulerexplicit(N[i], M[i]), ord=2)
     conv_rate = np.polyfit(np.log(h2k), np.log(l2errorexplicit), deg=1)
